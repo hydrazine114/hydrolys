@@ -124,4 +124,4 @@ if __name__ == '__main__':
     system = opt.get_part()
     for i in system:
         print(i)
-    print('gg')
+    print('Jo Jo!')
