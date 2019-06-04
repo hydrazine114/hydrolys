@@ -106,7 +106,7 @@ class Optimizator:
 
 
 if __name__ == '__main__':
-    system = read_gro('system.gro')
+    system = read_gro('structures\\system.gro')
     sle = {'C3', 'O10', 'H11'}
     sls = {'C2', 'O1', 'H10'}
     var_atoms = []
