@@ -125,3 +125,4 @@ if __name__ == '__main__':
     for i in system:
         print(i)
     print('JoJo')
+    print('Sonochino sadame!')
