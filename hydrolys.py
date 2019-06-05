@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from coolfuncs import *
+from optimizator import Optimizator
 
 
 class Hydrolis:
@@ -115,26 +116,45 @@ class Hydrolis:
             for line in self.changed_system:
                 # if line[0] <= 15:
                 #     line[-3] += 0.4
-                if 14 < line[0] <= 16:
-                    line[3] = count
-                    file.write('{:5d}{:5s}{:5s}{:5d}{:8.3f}{:8.3f}{:8.3f}\n'.format(*line))
-                    count += 1
+                # if 14 < line[0] <= 16:
+                line[3] = count
+                file.write('{:5d}{:5s}{:5s}{:5d}{:8.3f}{:8.3f}{:8.3f}\n'.format(*line))
+                count += 1
             file.write('10 10 10\n')
 
     @property
     def ch_system(self):
         return self.changed_system.copy()
 
-
-def optimization(system):
-    pass
+    def optimization(self):
+        sle = {'C3', 'O10', 'H11'}
+        sls = {'C2', 'O1', 'H10'}
+        var_atoms = []
+        points = []
+        for i in range(len(self.changed_system)):
+            if self.changed_system[i][0] in self.chosen and self.changed_system[i][2] in sle:
+                var_atoms.append(self.changed_system[i])
+                self.changed_system[i] = 0
+            elif self.changed_system[i][0] - 1 in self.chosen and self.changed_system[i][2] in sls:
+                var_atoms.append(self.changed_system[i])
+                self.changed_system[i] = 0
+            elif self.changed_system[i][0] in self.chosen or self.changed_system[i][0] - 1 in self.chosen:
+                points.append(self.changed_system[i])
+        opt = Optimizator(var_atoms, points)
+        opt.z_matr2xyz()
+        opt.optimaze()
+        optimazed = iter(opt.get_part(15))
+        for i in range(len(self.changed_system)):
+            if self.changed_system[i] == 0:
+                self.changed_system[i] = next(optimazed)
 
 
 if __name__ == '__main__':
-    input_file = 'polylac50.gro'
-    hydro = Hydrolis(input_file, distant=0.3, num_of_wat=3, out_file='out.gro')
+    input_file = 'structures/polylac50.gro'
+    hydro = Hydrolis(input_file, distant=0.3, num_of_wat=3, out_file='structures/out.gro')
     hydro.read_file()
     hydro.split_system()
     hydro.choose_res()
     hydro.change_res()
+    hydro.optimization()
     hydro.write()

@@ -16,12 +16,13 @@ class Optimizator:
     def __init__(self, variable_atoms, points):
         self.sle = {'C3', 'O10', 'H11'}
         self.sls = {'C2', 'O1', 'H10'}
-        self.xyzcoords = pd.DataFrame(np.zeros(shape=(len(sls) + len(sle), 3)), columns=['x', 'y', 'z'],
-                                      index=list(sls) + list(sle))
-        self.variable_atoms = pd.DataFrame(np.zeros(shape=(6, 3)), columns=['x', 'y', 'z'], index=list(sls) + list(sle))
+        self.xyzcoords = pd.DataFrame(np.zeros(shape=(len(self.sls) + len(self.sle), 3)), columns=['x', 'y', 'z'],
+                                      index=list(self.sls) + list(self.sle))
+        self.variable_atoms = pd.DataFrame(np.zeros(shape=(6, 3)), columns=['x', 'y', 'z'],
+                                           index=list(self.sls) + list(self.sle))
         self.points_value = []
         for line in variable_atoms:
-            if line[2] in sls or line[2] in sle:
+            if line[2] in self.sls or line[2] in self.sle:
                 self.variable_atoms.loc[line[2]] = line[4:]
         for i in points:
             self.points_value.append(i[4:])
@@ -94,14 +95,14 @@ class Optimizator:
         self.z_matr2xyz()
         return go_back(self.xyzcoords, params=self.params)
 
-    def get_part(self):
+    def get_part(self, res_num):
         system = []
         for i in self.opt_struc.index:
             if i in self.sle:
-                system.append([1, 'SLE', i, 0, *self.opt_struc.loc[i]])
+                system.append([res_num, 'SLE', i, 0, *self.opt_struc.loc[i]])
         for i in self.opt_struc.index:
             if i in self.sls:
-                system.append([2, 'SLS', i, 0, *self.opt_struc.loc[i]])
+                system.append([res_num + 1, 'SLS', i, 0, *self.opt_struc.loc[i]])
         return system
 
 
