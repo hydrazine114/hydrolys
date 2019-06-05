@@ -114,9 +114,6 @@ class Hydrolis:
         with open(self.out_file, 'w') as file:
             file.write('!comment\n{}\n'.format(len(self.changed_system)))
             for line in self.changed_system:
-                # if line[0] <= 15:
-                #     line[-3] += 0.4
-                # if 14 < line[0] <= 16:
                 line[3] = count
                 file.write('{:5d}{:5s}{:5s}{:5d}{:8.3f}{:8.3f}{:8.3f}\n'.format(*line))
                 count += 1
@@ -126,16 +123,16 @@ class Hydrolis:
     def ch_system(self):
         return self.changed_system.copy()
 
-    def optimization(self):
+    def optimization(self, resnum):
         sle = {'C3', 'O10', 'H11'}
         sls = {'C2', 'O1', 'H10'}
         var_atoms = []
         points = []
         for i in range(len(self.changed_system)):
-            if self.changed_system[i][0] in self.chosen and self.changed_system[i][2] in sle:
+            if self.changed_system[i][0] == resnum and self.changed_system[i][2] in sle:
                 var_atoms.append(self.changed_system[i])
                 self.changed_system[i] = 0
-            elif self.changed_system[i][0] - 1 in self.chosen and self.changed_system[i][2] in sls:
+            elif self.changed_system[i][0] == resnum + 1 and self.changed_system[i][2] in sls:
                 var_atoms.append(self.changed_system[i])
                 self.changed_system[i] = 0
             elif self.changed_system[i][0] in self.chosen or self.changed_system[i][0] - 1 in self.chosen:
@@ -143,7 +140,7 @@ class Hydrolis:
         opt = Optimizator(var_atoms, points)
         opt.z_matr2xyz()
         opt.optimaze()
-        optimazed = iter(opt.get_part(15))
+        optimazed = iter(opt.get_part(resnum))
         for i in range(len(self.changed_system)):
             if self.changed_system[i] == 0:
                 self.changed_system[i] = next(optimazed)
@@ -156,5 +153,5 @@ if __name__ == '__main__':
     hydro.split_system()
     hydro.choose_res()
     hydro.change_res()
-    hydro.optimization()
+    hydro.optimization(15)
     hydro.write()
