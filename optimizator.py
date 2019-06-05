@@ -4,7 +4,7 @@ from coolfuncs import *
 from scipy.optimize import minimize
 
 
-def lennard(mass):
+def lennard(mass): # Func for calc energy
     e = 1e-8
     q = 0.2
     energy = 4 * e * ((q / mass) ** 12 - (q / mass) ** 6)
@@ -14,13 +14,13 @@ def lennard(mass):
 
 class Optimizator:
     def __init__(self, variable_atoms, points):
-        self.sle = {'C3', 'O10', 'H11'}
+        self.sle = {'C3', 'O10', 'H11'}  # sets with names of atoms (variable) for optimization
         self.sls = {'C2', 'O1', 'H10'}
         self.xyzcoords = pd.DataFrame(np.zeros(shape=(len(self.sls) + len(self.sle), 3)), columns=['x', 'y', 'z'],
-                                      index=list(self.sls) + list(self.sle))
-        self.variable_atoms = pd.DataFrame(np.zeros(shape=(6, 3)), columns=['x', 'y', 'z'],
+                                      index=list(self.sls) + list(self.sle))  # xyz coord for var atoms
+        self.variable_atoms = pd.DataFrame(np.zeros(shape=(len(self.sls) + len(self.sle), 3)), columns=['x', 'y', 'z'],
                                            index=list(self.sls) + list(self.sle))
-        self.points_value = []
+        self.points_value = []  # values with atoms, which are close to var atoms
         for line in variable_atoms:
             if line[2] in self.sls or line[2] in self.sle:
                 self.variable_atoms.loc[line[2]] = line[4:]
@@ -33,23 +33,27 @@ class Optimizator:
                          ['O10', 'C3', 'Rco', 'C2', 'Acco', 'O1', 'Docco'],
                          ['H11', 'O10', 'Roh', 'C3', 'Acoh', 'C2', 'Dccoh']]
         self.variable_atoms, self.params = to_origin(self.variable_atoms, 'C3', 'C2', 'O1')
+        # move atoms to position for z matrix second param to 0,0,0 third to x, 0, 0 fourth to x, y, 0
         self.points_value = pd.DataFrame(self.points_value, columns=['x', 'y', 'z'])
         self.points_value = to_origin(self.points_value, params=self.params)
-        self.opt_x = None
+        self.opt_x = None  #
 
         for line in self.z_matrix:
             if len(line) >= 3:
                 line[2] = radius([self.variable_atoms.loc[line[0]].values, self.variable_atoms.loc[line[1]].values])
+                # set radius
             if len(line) >= 5:
                 line[4] = angle([self.variable_atoms.loc[line[3]].values, self.variable_atoms.loc[line[1]].values,
                                  self.variable_atoms.loc[line[0]].values])
+                # set angle between 3 atoms
             if len(line) >= 7:
                 line[6] = dihedral(np.array([self.variable_atoms.loc[line[5]].values,
                                              self.variable_atoms.loc[line[3]].values,
                                              self.variable_atoms.loc[line[1]].values,
                                              self.variable_atoms.loc[line[0]].values]))
+                # set dihedral atoms between 4 atoms
 
-    def z_matr2xyz(self):
+    def z_matrix2xyz(self):  # translate z matrix to xyz coordination
         self.xyzcoords.loc[self.z_matrix[0][0]] = [0, 0, 0]
         self.xyzcoords.loc[self.z_matrix[1][0]] = [self.z_matrix[1][2], 0, 0]
         self.xyzcoords.loc[self.z_matrix[2][0]] = [self.z_matrix[1][2] -
@@ -70,15 +74,14 @@ class Optimizator:
         self.z_matrix[4][-1] = x[4]
         self.z_matrix[5][-3] = x[5]
         self.z_matrix[5][-1] = x[6]
-        self.z_matr2xyz()
+        self.z_matrix2xyz()
+        # set variable in z matrix and translate it to xyz
         xyz = np.array(self.xyzcoords)
-        xyz = np.vstack((xyz, self.points_value))
+        xyz = np.vstack((xyz, self.points_value))  # add points
         mass = np.sum((xyz[:, np.newaxis, :] - xyz[np.newaxis, :, :]) ** 2, axis=-1)
-        return lennard(mass[np.triu_indices(len(mass), k=1)])
+        return lennard(mass[np.triu_indices(len(mass), k=1)])  # return energy
 
     def optimaze(self):
-        # x0 = np.array([34.974239616979354, 119.89345671591812, 10.927791425828554,
-        #                23.794593254343177, -2.420176407853105, 136.34921807599954, -153.38899809503656])
         x0 = [self.z_matrix[2][-1],
               self.z_matrix[3][-3],
               self.z_matrix[3][-1],
@@ -86,6 +89,7 @@ class Optimizator:
               self.z_matrix[4][-1],
               self.z_matrix[5][-3],
               self.z_matrix[5][-1]]
+        # set start point
         res = minimize(self.calc_energy, x0, method='nelder-mead',
                        options={'xtol': 1e-2, 'disp': True})
         self.opt_x = res.x
@@ -99,7 +103,7 @@ class Optimizator:
         self.z_matrix[4][-1] = self.opt_x[4]
         self.z_matrix[5][-3] = self.opt_x[5]
         self.z_matrix[5][-1] = self.opt_x[6]
-        self.z_matr2xyz()
+        self.z_matrix2xyz()  # returns optimization structure is returned to begin coord
         return go_back(self.xyzcoords, params=self.params)
 
     def get_part(self, res_num):
@@ -110,7 +114,7 @@ class Optimizator:
         for i in self.opt_struc.index:
             if i in self.sls:
                 system.append([res_num + 1, 'SLS', i, 0, *self.opt_struc.loc[i]])
-        return system
+        return system  # return optimization part of molecule
 
 
 if __name__ == '__main__':
@@ -127,7 +131,7 @@ if __name__ == '__main__':
         else:
             points.append(line)
     opt = Optimizator(var_atoms, points)
-    opt.z_matr2xyz()
+    opt.z_matrix2xyz()
     opt.optimaze()
     system = opt.get_part()
     for i in system:
