@@ -44,12 +44,13 @@ class Hydrolis:
             if atom[1] == 'SLS' or atom[1] == 'SLE':
                 terminator.add(atom[0])
 
-        # previous = -2
-        # for i in self.chosen.copy():
-        #     if i - 1 in terminator or i + 1 in terminator or previous + 1 == i:
-        #         self.chosen.remove(i)
-        #     else:
-        #         previous = i
+        previous = -2
+        for i in self.chosen.copy():
+            if i - 1 in terminator or i + 1 in terminator or previous + 1 == i:
+                self.chosen.remove(i)
+            else:
+                previous = i
+        self.chosen = list(self.chosen)
 
     def close2wat(self, atom):
         a = np.sum(np.sum((self.water - np.array(atom)) ** 2, axis=-1) < self.distant)
@@ -77,6 +78,8 @@ class Hydrolis:
                         self.changed_system.append(i)
             else:
                 self.changed_system.append(line)
+        for i in self.chosen:
+            self.optimization(i)
 
     def create_res(self):
         if self.atoms[0][2] == 'C2':
@@ -153,5 +156,4 @@ if __name__ == '__main__':
     hydro.split_system()
     hydro.choose_res()
     hydro.change_res()
-    hydro.optimization(15)
     hydro.write()
