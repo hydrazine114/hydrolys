@@ -145,6 +145,7 @@ class Hydrolis:
 
             elif self.changed_system[i][0] in self.chosen or self.changed_system[i][0] - 1 in self.chosen:
                 points.append(self.changed_system[i])  # we just add other atoms from chosen res and res before it
+
         opt = Optimizator(var_atoms, points)
         opt.z_matrix2xyz()
         opt.optimaze()
