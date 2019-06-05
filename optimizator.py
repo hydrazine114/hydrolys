@@ -77,8 +77,15 @@ class Optimizator:
         return lennard(mass[np.triu_indices(len(mass), k=1)])
 
     def optimaze(self):
-        x0 = np.array([34.974239616979354, 119.89345671591812, 10.927791425828554,
-                       23.794593254343177, -2.420176407853105, 136.34921807599954, -153.38899809503656])
+        # x0 = np.array([34.974239616979354, 119.89345671591812, 10.927791425828554,
+        #                23.794593254343177, -2.420176407853105, 136.34921807599954, -153.38899809503656])
+        x0 = [self.z_matrix[2][-1],
+              self.z_matrix[3][-3],
+              self.z_matrix[3][-1],
+              self.z_matrix[4][-3],
+              self.z_matrix[4][-1],
+              self.z_matrix[5][-3],
+              self.z_matrix[5][-1]]
         res = minimize(self.calc_energy, x0, method='nelder-mead',
                        options={'xtol': 1e-2, 'disp': True})
         self.opt_x = res.x
