@@ -2,6 +2,7 @@ import math
 import numpy as np
 from coolfuncs import *
 from optimizator import Optimizator
+import random
 
 
 class Hydrolis:
@@ -53,7 +54,7 @@ class Hydrolis:
                 self.chosen.remove(i)
             else:
                 previous = i
-        self.chosen = list(self.chosen)
+        self.chosen = [list(self.chosen)[random.randint(0, len(self.chosen)-1)]]
 
     def close2wat(self, atom):  # check atom to if hi is close to water
         a = np.sum(np.sum((self.water - np.array(atom)) ** 2, axis=-1) < self.distant)
@@ -79,7 +80,7 @@ class Hydrolis:
                     reses = self.create_res()
                     for i in reses:
                         self.changed_system.append(i)
-            else: # if it isn't chosen res or before chosen res we just add it without changes
+            else:  # if it isn't chosen res or before chosen res we just add it without changes
                 self.changed_system.append(line)
 
         for i in self.chosen:  # finally we optimaze this res

@@ -4,7 +4,7 @@ from coolfuncs import *
 from scipy.optimize import minimize
 
 
-def lennard(mass): # Func for calc energy
+def lennard(mass):  # Func for calc energy
     e = 1e-8
     q = 0.2
     energy = 4 * e * ((q / mass) ** 12 - (q / mass) ** 6)
@@ -90,6 +90,8 @@ class Optimizator:
               self.z_matrix[5][-3],
               self.z_matrix[5][-1]]
         # set start point
+        x0 = np.array(x0)
+
         res = minimize(self.calc_energy, x0, method='nelder-mead',
                        options={'xtol': 1e-2, 'disp': True})
         self.opt_x = res.x
